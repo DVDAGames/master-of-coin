@@ -16,4 +16,8 @@ let's do this
 - **09:00am**: Wake up
 - **09:15am**: Make some tea and start scrapping the Twine work
 - **09:30am**: Start over on better idea
-- **12:50am**: Take a break for lunch and errands; basic start to game is sort of working
+- **12:50pm**: Take a break for lunch and errands; basic start to game is sort of working
+- **15:50pm**: Back to work; polish the initial concept; get game loop working
+- **18:15pm**: Break time
+- **18:30pm**: Notice part of our fence has fallen down; try to apply a temporary fix so the dogs don't get out
+- **18:55pm**: Back to work; get reset logic working correctly

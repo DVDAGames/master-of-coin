@@ -37,6 +37,8 @@ const Stats = props => {
       <dd>{SEASONS[props.season].label}</dd>
       <dt>Time in Office</dt>
       <dd>{calculateTime()}</dd>
+      <dt>Unrest</dt>
+      <dd>{props.unrest}</dd>
     </dl>
   );
 }

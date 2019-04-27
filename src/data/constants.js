@@ -1,3 +1,32 @@
+export const VERY_FAST_TICK_RATE = 100;
+export const FAST_TICK_RATE = 500;
+export const BASE_TICK_RATE = 1250;
+export const SLOW_TICK_RATE = 2500;
+export const VERY_SLOW_TICK_RATE = 5000;
+
+export const TICK_RATES = [
+  {
+    label: 'Very Fast',
+    value: VERY_FAST_TICK_RATE,
+  },
+  {
+    label: 'Fast',
+    value: FAST_TICK_RATE,
+  },
+  {
+    label: 'Normal',
+    value: BASE_TICK_RATE,
+  },
+  {
+    label: 'Slow',
+    value: SLOW_TICK_RATE,
+  },
+  {
+    label: 'Very Slow',
+    value: VERY_SLOW_TICK_RATE,
+  },
+];
+
 export const DAYS_IN_SEASON = 90;
 
 export const BASE_TAX_RATE = 0.01;
@@ -42,4 +71,4 @@ export const DAYS_IN_YEAR = DAYS_IN_SEASON * SEASONS.length;
 
 export const DAILY_SALARY = DAYS_IN_YEAR / 2 / DAYS_IN_YEAR;
 
-export const DAILY_COSTS = 0.0000001;
+export const DAILY_COSTS = 0.0001;

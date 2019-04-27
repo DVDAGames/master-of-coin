@@ -16,6 +16,7 @@ export default [
       unrest: randomize(5, 15),
       population: randomize(MIN_POPULATION, MAX_POPULATION),
       taxes: BASE_TAX_RATE,
+      affection: randomize(5, 10),
       affinity: {
         people: randomize(75, 90),
         nobles: randomize(40, 60),

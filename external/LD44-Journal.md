@@ -21,3 +21,6 @@ let's do this
 - **18:15pm**: Break time
 - **18:30pm**: Notice part of our fence has fallen down; try to apply a temporary fix so the dogs don't get out
 - **18:55pm**: Back to work; get reset logic working correctly
+- **19:45pm**: Try to get GitHub Pages hosting working correctly so I don't save it for the last minute
+- **20:15**: Break time; walk the dogs
+

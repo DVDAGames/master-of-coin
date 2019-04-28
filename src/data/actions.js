@@ -22,16 +22,6 @@ export default [
         message: 'The King wants to raise the people\'s spirits with a celebratory tournament.',
         cost: 10000,
         daysPassed: 20,
-      }
-    ],
-  },
-  {
-    actionId: 'firstRequest',
-    kings: [
-      {
-        message: 'The King wants to raise the people\'s spirits with a celebratory tournament.',
-        cost: 10000,
-        daysPassed: 20,
         modifiers: {
           affinity: {
             people: 25,

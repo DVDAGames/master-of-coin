@@ -26,14 +26,20 @@ class Action extends Component {
   }
 
   render() {
-    const { message } = this.props;
+    const { message, options, cost = 0, daysPassed = 1 } = this.props;
+
+    const dayString = (daysPassed > 1) ? 'days' : 'day';
+
+    const details = (
+      <p>This will cost <strong>{cost} crowns</strong> and take <strong>{daysPassed} {dayString}</strong>.</p>
+    );
 
     return (
       <article>
         <p>{message}</p>
-        {this.renderOptions()}
+        {(options && this.renderOptions()) || details}
       </article>
-    )
+    );
   }
 }
 

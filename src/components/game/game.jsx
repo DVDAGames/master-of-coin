@@ -246,7 +246,9 @@ class Game extends Component {
       let newUnrest = unrest;
       let previousCoinAmount = coin;
 
-      while(daysPassed > 0) {
+      let daysToProcess = daysPassed;
+
+      while(daysToProcess > 0) {
         populationChange = newPopulation * SEASONS[season].growth;
 
         newPopulation = Math.floor(newPopulation + populationChange);
@@ -259,7 +261,7 @@ class Game extends Component {
 
         newUnrest = newUnrest + (newCoinAmount > previousCoinAmount) ? -2 : 2;
 
-        daysPassed--;
+        daysToProcess--;
       }
 
       this.setState({
@@ -293,6 +295,8 @@ class Game extends Component {
       finalActionProps = actionProps.kings[currentKing];
     }
 
+    console.log(finalActionProps);
+
     return (
       <Action returnValue={handler} {...finalActionProps} />
     );
@@ -313,7 +317,6 @@ class Game extends Component {
 
     return (
       <div>
-        <p>Master of Coin, w/ state.</p>
         <King king={kings[currentKing]} />
         {started && !decision && <Tweaks paused={paused} taxes={state.taxes} tickRate={tickRate} onChangeTaxRate={this.changeTaxRate} onChangeTickRate={this.changeTickRate} onPause={this.stopTicking} onPlay={this.startTicking} onResign={this.resetGame} />}
         {started && <Stats {...state} />}

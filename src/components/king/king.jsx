@@ -4,7 +4,7 @@ const King = props => {
   const { king } = props;
 
   return (
-    <h3>King: {king.name}</h3>
+    <h3>Ruler: {king.name}</h3>
   );
 };
 

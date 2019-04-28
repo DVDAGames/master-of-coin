@@ -34,3 +34,5 @@ let's do this
 - **09:00**: Wake up; make tea; fix bugs
 - **10:00**: Add other kings to the game
 - **10:15**: Break to walk dogs
+- **11:30**: Brunch
+- **14:15**: Back to work

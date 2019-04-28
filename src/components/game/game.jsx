@@ -63,6 +63,7 @@ class Game extends Component {
     this.updateTaxRate = this.updateTaxRate.bind(this);
     this.handleAction = this.handleAction.bind(this);
     this.resetGame = this.resetGame.bind(this);
+    this.resign = this.resign.bind(this);
   }
 
   componentWillMount() {
@@ -71,8 +72,14 @@ class Game extends Component {
     this.setKing(currentKing);
   }
 
-  setKing(currentKing) {
-    const { kings, coin, loans: oldLoans, initialLoans: oldInitialLoans } = this.state;
+  setKing(currentKing = null) {
+    let currentStateObject = this.state;
+
+    if (currentKing === null) {
+      currentStateObject = defaultState;
+    }
+
+    const { kings, coin, loans: oldLoans, initialLoans: oldInitialLoans } = currentStateObject;
 
     const ignoreKings = [];
 
@@ -188,8 +195,20 @@ class Game extends Component {
     }
   }
 
+  resign() {
+    this.stopTicking();
+
+    this.setState({
+      statusMessage: (
+        <div>
+          <p>Resigning as Master of Coin without being dismissed is tantamount to treason. You'll spend the rest of your days in the dungeons.</p>
+          <button type="button" onClick={this.resetGame}>Reset</button>
+        </div>
+      )
+    });
+  }
+
   resetGame() {
-    console.log('resetting game');
     this.stopTicking();
 
     this.setState(defaultState);
@@ -274,7 +293,9 @@ class Game extends Component {
 
         newCoinAmount = newCoinAmount + taxesPaid - costsIncurred;
 
-        newUnrest = newUnrest + (newCoinAmount > previousCoinAmount) ? -2 : 2;
+        const unrestDifference = (newCoinAmount > previousCoinAmount) ? -0.2 : 0.2;
+
+        newUnrest = newUnrest + unrestDifference;
 
         daysToProcess--;
       }
@@ -332,10 +353,10 @@ class Game extends Component {
     return (
       <div>
         <King king={kings[currentKing]} />
-        {started && !decision && <Tweaks paused={paused} taxes={state.taxes} tickRate={tickRate} onChangeTaxRate={this.changeTaxRate} onChangeTickRate={this.changeTickRate} onPause={this.stopTicking} onPlay={this.startTicking} onResign={this.resetGame} />}
-        {started && <Loans loans={state.loans} lenders={state.lenders} initialLoans={state.initialLoans} />}
-        {started && <Stats {...state} />}
-        {event && event.action && this.renderAction(event.action, event.handler)}
+        {!statusMessage && started && !decision && <Tweaks paused={paused} taxes={state.taxes} tickRate={tickRate} onChangeTaxRate={this.changeTaxRate} onChangeTickRate={this.changeTickRate} onPause={this.stopTicking} onPlay={this.startTicking} onResign={this.resign} />}
+        {!statusMessage && started && <Loans loans={state.loans} lenders={state.lenders} initialLoans={state.initialLoans} />}
+        {!statusMessage && started && <Stats {...state} />}
+        {!statusMessage && event && event.action && this.renderAction(event.action, event.handler)}
         {(statusMessage) ? statusMessage : this.play()}
       </div>
     )

@@ -7,8 +7,6 @@ const Loans = props => {
       .map((loan, id) => {
         const initialLoan = props.initialLoans.find((initialLoan) => loan.id === initialLoan.id);
 
-        console.log(initialLoan);
-
         return (
           <li key={`loan-${loan.id}`}>
             <strong>{props.lenders[loan.lender].name}</strong> {initialLoan.amount} @ {(loan.rate * 100)}% => {loan.amount}

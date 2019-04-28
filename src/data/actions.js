@@ -29,26 +29,58 @@ export default [
             nobles: 15,
           },
           affection: 10,
-        }
-      }
+        },
+      },
+      {
+        message: 'The Queen wants to destroy the religious order that\'s gaining popularity with the people.',
+        cost: 20000,
+        daysPassed: 30,
+        modifiers: {
+          affinity: {
+            people: -25,
+            nobles: -10,
+          },
+          affection: 20,
+        },
+      },
+      {
+        message: 'The King wants to celebrate his birthday.',
+        cost: 40000,
+        daysPassed: 15,
+        modifiers: {
+          affinity: {
+            people: 5,
+            nobles: 5,
+          },
+          affection: 5,
+        },
+      },
+      {
+        message: 'The Queen wants to institute a universal basic income system.',
+        cost: 100000,
+        daysPassed: 60,
+        modifiers: {
+          affinity: {
+            people: 45,
+            nobles: 5,
+          },
+          affection: 25,
+        },
+      },
     ],
   },
   {
     actionId: 'northernRebellion',
-    kings: [
-      {
-        message: 'The Northerners are attempting to rebel. The army needs war time funding.',
-        cost: 25000,
-        daysPassed: 30,
-        modifiers: {
-          unrest: 10,
-          affinity: {
-            people: -5,
-            nobles: -10,
-          },
-          affection: 2,
-        }
-      }
-    ]
-  }
+    message: 'The Northerners are attempting to rebel. The army needs war time funding.',
+    cost: 25000,
+    daysPassed: 30,
+    modifiers: {
+      unrest: 10,
+      affinity: {
+        people: -5,
+        nobles: -10,
+      },
+      affection: 2,
+    },
+  },
 ];

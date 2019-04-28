@@ -74,7 +74,7 @@ class Action extends Component {
   }
 
   renderForm() {
-    const { cost, coin, lenders } = this.props;
+    const { cost, coin, lenders, taxes } = this.props;
 
     const treasuryInputProps = {
       name: 'coin',
@@ -131,8 +131,16 @@ class Action extends Component {
       options: lenderOptions,
     };
 
+    const taxRateInputProps = {
+      type: 'number',
+      name: 'taxRate',
+      label: 'Adjust Taxes',
+      value: taxes,
+    };
+
     return (
-      <form noValidate>
+      <form noValidate autoComplete="off">
+        <Input {...taxRateInputProps} />
         <Input {...treasuryInputProps} />
         <Input {...loanInputProps} />
         <Dropdown {...loanDropdownProps} />

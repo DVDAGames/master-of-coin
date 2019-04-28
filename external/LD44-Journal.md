@@ -26,3 +26,4 @@ let's do this
 - **20:15**: Break time; walk the dogs
 - **21:00**: *24 hours have passed...*
 - **21:15**: Back to work
+- **23:30**: Tea break; Some of the interaction is set up; weird bug calculating the currency :(

@@ -7,10 +7,9 @@
   "license": "MIT",
   "scripts": {
     "start": "parcel ./src/index.html",
-    "build": "yarn clean && parcel build ./src/index.html --out-dir ./docs --no-minify && yarn fix:gh-pages",
+    "build": "yarn clean && parcel build ./src/index.html --out-dir ./docs --no-minify",
     "clean": "yarn clean:docs",
-    "clean:docs": "rimraf ./docs",
-    "fix:gh-pages": "cd ./docs && touch .nojekyll"
+    "clean:docs": "rimraf ./docs"
   },
   "dependencies": {
     "react": "^16.8.6",

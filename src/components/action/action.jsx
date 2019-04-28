@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 
+import randomize from '../../utils/random';
+
 import Option from '../option';
-
 import Input from '../input';
-
 import Dropdown from '../dropdown';
 
 const getLenderWithLeastLoans = (numberOfLoans) => {
@@ -12,6 +12,18 @@ const getLenderWithLeastLoans = (numberOfLoans) => {
   })[0];
 };
 class Action extends Component {
+  state = {
+    bargainingAttempts: 2,
+    bargained: false,
+    bargainMessage: null,
+    cost: this.props.cost,
+    loanAmount: (this.props.cost > this.props.coin) ? Math.ceil((this.props.cost - this.props.coin) / 1000) * 1000 : 0,
+    treasuryAmount: (this.props.cost > this.props.coin) ? this.props.coin : this.props.cost,
+    chosenLender: 0,
+    taxRate: this.props.taxes,
+    days: this.props.daysPassed,
+  };
+
   constructor(props) {
     super(props);
 
@@ -29,10 +41,14 @@ class Action extends Component {
 
     this.updateLoanValue = this.updateLoanValue.bind(this);
     this.handleChoice = this.handleChoice.bind(this);
+    this.attemptToBargain = this.attemptToBargain.bind(this);
+    this.submitAction = this.submitAction.bind(this);
+    this.updateFormState = this.updateFormState.bind(this);
   }
 
   componentDidMount() {
-    const { loans } = this.props;
+    const { loans, coin } = this.props;
+    const { cost } = this.state;
 
     this.numberOfLoans = loans.reduce((loanObj, loan) => {
       const lenderId = loan.lender;
@@ -49,18 +65,82 @@ class Action extends Component {
 
       return lenderObj;
     }, this.debtPerLender);
+
+    const stateObject = {
+      chosenLender: getLenderWithLeastLoans(this.numberOfLoans),
+    }
+
+    if (coin <= 0) {
+      stateObject.treasuryAmount = 0;
+
+      stateObject.loanAmount = Math.ceil(cost / 1000) * 1000;
+    }
+
+    this.setState({
+      stateObject,
+    });
   }
 
   updateLoanValue(e) {
     const { target } = e;
 
-    target.value = Math.ceil(target.value / 1000) * 1000;
+    const loanAmount = Math.ceil(target.value / 1000) * 1000;
+
+    target.value = loanAmount;
+
+    this.setState({
+      loanAmount,
+    });
   }
 
   handleChoice(value) {
     const { returnValue } = this.props;
 
     returnValue(value);
+  }
+
+  attemptToBargain() {
+    const { bargaining, affection, coin } = this.props;
+
+    const { bargainingAttempts, cost } = this.state;
+
+    const stateObject = {
+      bargainingAttempts: bargainingAttempts - 1,
+    };
+
+    if (affection > 0 && randomize(1, 100) < affection) {
+      const newCost =  Math.floor(cost - cost * bargaining);
+
+      stateObject.cost = newCost;
+      stateObject.bargained = true;
+      stateObject.bargainMessage = '"You make a good point. We should be more careful with our funds."';
+
+      if (coin <= 0) {
+        stateObject.treasuryAmount = 0;
+        stateObject.loanAmount = Math.ceil(newCost / 1000) * 1000;
+      } else {
+        stateObject.treasuryAmount = (newCost > coin) ? coin : newCost;
+        stateObject.loanAmount = (newCost > coin) ? Math.ceil((newCost - coin) / 1000) * 1000 : 0
+      }
+    } else {
+      stateObject.bargainMessage = '"You forget your station, my Lord. You are here to serve me as I serve the realm."';
+    }
+
+    this.setState(stateObject);
+  }
+
+  updateFormState(e) {
+    const { target } = e;
+
+    this.setState({
+      [target.name]: target.value
+    });
+  }
+
+  submitAction(e) {
+    e.preventDefault();
+
+    this.handleChoice(this.state);
   }
 
   renderOptions() {
@@ -74,27 +154,38 @@ class Action extends Component {
   }
 
   renderForm() {
-    const { cost, coin, lenders, taxes } = this.props;
+    const {
+      coin,
+      lenders,
+      bargaining,
+      affection
+    } = this.props;
+
+    const {
+      bargainingAttempts,
+      bargained,
+      bargainMessage,
+      treasuryAmount,
+      loanAmount,
+      taxRate,
+      chosenLender,
+      cost,
+    } = this.state;
 
     const treasuryInputProps = {
-      name: 'coin',
+      name: 'treasuryAmount',
       label: 'Spend from the Treasury',
-      value: (cost > coin) ? coin : cost,
+      value: treasuryAmount,
+      onChange: this.updateFormState,
     };
 
     const loanInputProps = {
-      name: 'loan',
+      name: 'loanAmount',
       label: 'Get a Loan',
-      value: (cost > coin) ? Math.ceil((cost - coin) / 1000) * 1000 : 0,
+      value: loanAmount,
       onBlur: this.updateLoanValue,
+      onChange: this.updateFormState,
     };
-
-    if (coin <= 0) {
-      treasuryInputProps.disabled = true;
-      treasuryInputProps.value = 0;
-
-      loanInputProps.value = Math.ceil(cost / 1000) * 1000;
-    }
 
     const lenderOptions = lenders
       .filter((lender, id) => this.numberOfLoans[id] < lender.maxLoans || lender.maxLoans === 0)
@@ -124,34 +215,45 @@ class Action extends Component {
       })
     ;
 
+    if (coin <= 0) {
+      treasuryInputProps.disabled = true;
+    }
+
     const loanDropdownProps = {
-      name: 'lender',
+      name: 'chosenLender',
       label: 'Get a Loan from',
-      value: getLenderWithLeastLoans(this.numberOfLoans),
+      value: chosenLender,
       options: lenderOptions,
+      onChange: this.updateFormState,
     };
 
     const taxRateInputProps = {
       type: 'number',
       name: 'taxRate',
       label: 'Adjust Taxes',
-      value: taxes,
+      value: taxRate,
+      onChange: this.updateFormState,
     };
 
+    const canBargain = !bargained && bargaining !== 0.00 && bargainingAttempts > 0 && affection > 0;
+
     return (
-      <form noValidate autoComplete="off">
+      <form noValidate autoComplete="off" onSubmit={this.submitAction}>
+        {bargainMessage !== null && <p>{bargainMessage}</p>}
+        {canBargain && <button type="button" onClick={this.attemptToBargain}>Convince Them to Spend Less</button>}
         <Input {...taxRateInputProps} />
         <Input {...treasuryInputProps} />
         <Input {...loanInputProps} />
         <Dropdown {...loanDropdownProps} />
-        <p><strong>Interest Rate</strong>: {lenders[getLenderWithLeastLoans(this.numberOfLoans)].rate.med * 100}%</p>
         <button type="submit">Submit Action</button>
       </form>
     )
   }
 
   render() {
-    const { message, options, cost = 0, daysPassed = 1 } = this.props;
+    const { message, options, daysPassed = 1 } = this.props;
+
+    const { cost } = this.state;
 
     const dayString = (daysPassed > 1) ? 'days' : 'day';
 

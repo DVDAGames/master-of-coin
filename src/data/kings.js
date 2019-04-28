@@ -18,7 +18,7 @@ export default [
       unrest: randomize(5, 15),
       population: randomize(MIN_POPULATION, MAX_POPULATION),
       taxes: BASE_TAX_RATE,
-      affection: randomize(5, 10),
+      affection: randomize(15, 30),
       affinity: {
         people: randomize(75, 90),
         nobles: randomize(40, 60),
@@ -38,7 +38,8 @@ export default [
           maxDebt: 10000,
           rate: 0.00,
         },
-      ]
+      ],
+      bargaining: 0.50,
     },
   },
   {
@@ -68,7 +69,8 @@ export default [
           maxDebt: 100000,
           rate: 0.00,
         },
-      ]
+      ],
+      bargaining: 0.05,
     },
   },
   {
@@ -91,7 +93,8 @@ export default [
           maxDebt: 50000,
           rate: 0.0001,
         },
-      ]
+      ],
+      bargaining: 0.00,
     },
   },
   {
@@ -123,7 +126,41 @@ export default [
           maxDebt: 250000,
           rate: 0.02,
         },
-      ]
+      ],
+      bargaining: 0.20,
+    },
+  },
+  {
+    name: 'Jonathan Slow',
+    defaults: {
+      coin: randomize(0, 100),
+      unrest: randomize(0, 10),
+      population: randomize(MIN_POPULATION, MAX_POPULATION),
+      taxes: BASE_TAX_RATE,
+      affection: randomize(30, 45),
+      affinity: {
+        people: randomize(75, 95),
+        nobles: randomize(20, 40),
+      },
+      loans: [
+        {
+          id: generate(),
+          amount: 5000,
+          rate: 0.0025,
+          // this should make the lender our new The North lender below
+          // once it gets concatenated with the original LENDERS Array
+          lender: LENDERS.length,
+        }
+      ],
+      lenders: [
+        {
+          name: 'The North',
+          maxLoans: 5,
+          maxDebt: 100000,
+          rate: 0.0025,
+        },
+      ],
+      bargaining: 0.325,
     },
   },
 ];

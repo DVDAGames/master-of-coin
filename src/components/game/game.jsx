@@ -30,6 +30,7 @@ const defaultState = {
     nobles: 0,
     people: 0,
   },
+  bargaining: 0.00,
   coin: 0,
   unrest: 0,
   population: 0,
@@ -104,6 +105,7 @@ class Game extends Component {
       coin: coin + kings[newKing].defaults.coin + newLoans.reduce((loanAmount, loan) => loanAmount + loan.amount, 0),
       loans: Array.concat(oldLoans, newLoans),
       initialLoans: Array.concat(oldInitialLoans, newLoans),
+      bargaining: kings[newKing].defaults.bargaining,
     };
 
     if (currentKing === null) {
@@ -119,14 +121,6 @@ class Game extends Component {
     }
 
     this.setState(stateObject);
-  }
-
-  increaseDays(daysToAdd = 1) {
-    const { days } = this.state;
-
-    this.setState({
-      days: days + daysToAdd,
-    });
   }
 
   updateTaxRate(e) {
@@ -190,7 +184,6 @@ class Game extends Component {
         started: true,
       });
 
-      this.increaseDays();
       this.startTicking();
     }
   }
@@ -219,10 +212,10 @@ class Game extends Component {
   handleAction(value) {
     console.log(value);
 
-    this.startTicking();
+    this.tick(value.days, true, this.startTicking);
   }
 
-  tick(daysPassed = 1) {
+  tick(daysPassed = 1, skipEvent = false, callback) {
     const {
       population,
       season,
@@ -235,9 +228,7 @@ class Game extends Component {
       loans,
     } = this.state;
 
-    console.log('day:', days);
-
-    if (Math.random() <= eventProbability) {
+    if (!skipEvent && Math.random() <= eventProbability) {
       const { timer } = this.state;
 
       clearInterval(timer);
@@ -307,7 +298,13 @@ class Game extends Component {
         unrest: newUnrest,
         days: days + daysPassed,
         loans: loansWithInterest,
+        decision: false,
+        event: {},
       });
+
+      if (typeof callback === 'function') {
+        callback();
+      }
     }
   }
 

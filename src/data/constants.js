@@ -67,7 +67,7 @@ export const LENDERS = [
   },
   {
     name: 'Noble Houses',
-    maxLoans: 0,
+    maxLoans: 5,
     maxDebt: BASE_POPULATION / 2,
     rate: {
       low: 0.00,

@@ -3,11 +3,7 @@ import React from 'react';
 import { SEASONS, DAYS_IN_YEAR } from '../../data/constants';
 
 const Stats = props => {
-  const calculateLoans = () => props.loans.reduce((totalLoans, loan) => {
-    const loanValue = loan.amount + Math.ceil(loan.rate * props.days);
-
-    return totalLoans + loanValue;
-  }, 0);
+  const calculateLoans = () => props.loans.reduce((totalLoans, loan) => totalLoans + loan.amount, 0);
 
   const calculateCoin = () => props.coin - calculateLoans();
 
@@ -29,7 +25,9 @@ const Stats = props => {
 
   return (
     <dl>
-      <dt>Treasury Minus Loans</dt>
+      <dt>Treasury</dt>
+      <dd>{props.coin}</dd>
+      <dt>Minus Loans</dt>
       <dd>{calculateCoin()}</dd>
       <dt>Population</dt>
       <dd>{props.population}</dd>

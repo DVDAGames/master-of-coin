@@ -27,3 +27,10 @@ let's do this
 - **21:00**: *24 hours have passed...*
 - **21:15**: Back to work
 - **23:30**: Tea break; Some of the interaction is set up; weird bug calculating the currency :(
+- **24:00**: Sleep
+
+## 2019-04-28
+
+- **09:00**: Wake up; make tea; fix bugs
+- **10:00**: Add other kings to the game
+- **10:15**: Break to walk dogs

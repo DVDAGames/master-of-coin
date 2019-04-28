@@ -9,6 +9,7 @@ import {
   DAILY_COSTS,
   BASE_TAX_RATE,
   TICK_RATES,
+  LENDERS,
 } from '../../data/constants';
 
 import kings from '../../data/kings';
@@ -36,6 +37,8 @@ const defaultState = {
   season: randomize(0, SEASONS.length - 1),
   taxes: BASE_TAX_RATE,
   loans: [],
+  initialLoans: [],
+  lenders: LENDERS,
   statusMessage: null,
   eventProbability: 0.2,
   timer: null,
@@ -69,7 +72,7 @@ class Game extends Component {
   }
 
   setKing(currentKing) {
-    const { kings } = this.state;
+    const { kings, coin, loans: oldLoans, initialLoans: oldInitialLoans } = this.state;
 
     const ignoreKings = [];
 
@@ -82,27 +85,29 @@ class Game extends Component {
     const {
       affinity,
       affection,
+      lenders,
+      loans: newLoans,
     } = kings[newKing].defaults;
 
     const stateObject = {
       affinity,
       affection,
       currentKing: newKing,
+      lenders: Array.concat(defaultState.lenders, lenders),
+      coin: coin + kings[newKing].defaults.coin + newLoans.reduce((loanAmount, loan) => loanAmount + loan.amount, 0),
+      loans: Array.concat(oldLoans, newLoans),
+      initialLoans: Array.concat(oldInitialLoans, newLoans),
     };
 
     if (currentKing === null) {
       const {
-        coin,
         population,
         unrest,
-        loans,
         taxes,
       } = kings[newKing].defaults;
 
-      stateObject.coin = coin;
       stateObject.population = population;
       stateObject.unrest = unrest;
-      stateObject.loans = loans;
       stateObject.taxes = taxes;
     }
 
@@ -261,7 +266,8 @@ class Game extends Component {
         costsIncurred = Math.floor(newPopulation * DAILY_COSTS);
 
         loansWithInterest = loansWithInterest.map((loan) => ({
-          amount: Math.ceil(loan.amount + loan.amount * loan.rate),
+          id: loan.id,
+          amount: Math.floor(loan.amount + loan.amount * loan.rate),
           rate: loan.rate,
           lender: loan.lender,
         }));
@@ -327,7 +333,7 @@ class Game extends Component {
       <div>
         <King king={kings[currentKing]} />
         {started && !decision && <Tweaks paused={paused} taxes={state.taxes} tickRate={tickRate} onChangeTaxRate={this.changeTaxRate} onChangeTickRate={this.changeTickRate} onPause={this.stopTicking} onPlay={this.startTicking} onResign={this.resetGame} />}
-        {started && <Loans loans={state.loans} />}
+        {started && <Loans loans={state.loans} lenders={state.lenders} initialLoans={state.initialLoans} />}
         {started && <Stats {...state} />}
         {event && event.action && this.renderAction(event.action, event.handler)}
         {(statusMessage) ? statusMessage : this.play()}

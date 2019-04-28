@@ -1,7 +1,5 @@
 import React, { Component } from 'react';
 
-import { LENDERS } from '../../data/constants';
-
 import Option from '../option';
 
 import Input from '../input';
@@ -17,18 +15,19 @@ class Action extends Component {
   constructor(props) {
     super(props);
 
-    this.numberOfLoans = LENDERS.reduce((loanObj, lender, id) => {
+    this.numberOfLoans = props.lenders.reduce((loanObj, lender, id) => {
       loanObj[id] = 0;
 
       return loanObj;
     }, {});
 
-    this.debtPerLender = LENDERS.reduce((lenderObj, lender, id) => {
+    this.debtPerLender = props.lenders.reduce((lenderObj, lender, id) => {
       lenderObj[id] = 0;
 
       return lenderObj;
     }, {});
 
+    this.updateLoanValue = this.updateLoanValue.bind(this);
     this.handleChoice = this.handleChoice.bind(this);
   }
 
@@ -52,6 +51,12 @@ class Action extends Component {
     }, this.debtPerLender);
   }
 
+  updateLoanValue(e) {
+    const { target } = e;
+
+    target.value = Math.ceil(target.value / 1000) * 1000;
+  }
+
   handleChoice(value) {
     const { returnValue } = this.props;
 
@@ -69,7 +74,7 @@ class Action extends Component {
   }
 
   renderForm() {
-    const { cost, coin } = this.props;
+    const { cost, coin, lenders } = this.props;
 
     const treasuryInputProps = {
       name: 'coin',
@@ -80,23 +85,43 @@ class Action extends Component {
     const loanInputProps = {
       name: 'loan',
       label: 'Get a Loan',
-      value: (cost > coin) ? cost - coin : 0,
+      value: (cost > coin) ? Math.ceil((cost - coin) / 1000) * 1000 : 0,
+      onBlur: this.updateLoanValue,
     };
 
     if (coin <= 0) {
       treasuryInputProps.disabled = true;
       treasuryInputProps.value = 0;
 
-      loanInputProps.value = cost;
+      loanInputProps.value = Math.ceil(cost / 1000) * 1000;
     }
 
-    const lenderOptions = LENDERS
+    const lenderOptions = lenders
       .filter((lender, id) => this.numberOfLoans[id] < lender.maxLoans || lender.maxLoans === 0)
       .filter((lender, id) => this.debtPerLender[id] < lender.maxDebt)
-      .map((lender, id) => ({
-        label: lender.name,
-        value: id,
-      }))
+      .map((lender, id) => {
+        let rate;
+
+        if (typeof lender.rate === 'number') {
+          rate = lender.rate;
+        } else {
+          const hasHalfOfMaxLoans = lender.maxLoans && this.numberOfLoans[id] >= lender.maxLoans / 2;
+          const hasHalfOfMaxDebt = lender.maxDebt && this.debtPerLender[id] >= lender.maxDebt / 2;
+
+          if (hasHalfOfMaxDebt && hasHalfOfMaxLoans) {
+            rate = lender.rate.high;
+          } else if(hasHalfOfMaxDebt || hasHalfOfMaxLoans) {
+            rate = lender.rate.med;
+          } else {
+            rate = lender.rate.low;
+          }
+        }
+
+        return {
+          label: `${lender.name} @ ${rate * 100}%`,
+          value: id,
+        }
+      })
     ;
 
     const loanDropdownProps = {
@@ -111,7 +136,7 @@ class Action extends Component {
         <Input {...treasuryInputProps} />
         <Input {...loanInputProps} />
         <Dropdown {...loanDropdownProps} />
-        <p><strong>Interest Rate</strong>: {LENDERS[getLenderWithLeastLoans(this.numberOfLoans)].rate.med * 100}%</p>
+        <p><strong>Interest Rate</strong>: {lenders[getLenderWithLeastLoans(this.numberOfLoans)].rate.med * 100}%</p>
         <button type="submit">Submit Action</button>
       </form>
     )

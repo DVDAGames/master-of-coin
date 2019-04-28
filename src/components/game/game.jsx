@@ -315,7 +315,7 @@ class Game extends Component {
       <div>
         <p>Master of Coin, w/ state.</p>
         <King king={kings[currentKing]} />
-        {started && !decision && <Tweaks paused={paused} taxes={state.taxes} tickRate={tickRate} onChangeTaxRate={this.changeTaxRate} onChangeTickRate={this.changeTickRate} onPause={this.stopTicking} onPlay={this.startTicking} />}
+        {started && !decision && <Tweaks paused={paused} taxes={state.taxes} tickRate={tickRate} onChangeTaxRate={this.changeTaxRate} onChangeTickRate={this.changeTickRate} onPause={this.stopTicking} onPlay={this.startTicking} onResign={this.resetGame} />}
         {started && <Stats {...state} />}
         {event && event.action && this.renderAction(event.action, event.handler)}
         {(statusMessage) ? statusMessage : this.play()}

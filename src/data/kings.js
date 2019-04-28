@@ -24,7 +24,7 @@ export default [
       loans: [
         {
           amount: 1000,
-          rate: 0.00,
+          rate: 0.00001,
           lender: 1,
         },
       ],

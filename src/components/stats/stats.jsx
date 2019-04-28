@@ -29,7 +29,7 @@ const Stats = props => {
 
   return (
     <dl>
-      <dt>Treasury</dt>
+      <dt>Treasury Minus Loans</dt>
       <dd>{calculateCoin()}</dd>
       <dt>Population</dt>
       <dd>{props.population}</dd>

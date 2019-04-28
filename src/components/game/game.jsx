@@ -18,6 +18,7 @@ import King from '../king';
 import Stats from '../stats';
 import Action from '../action';
 import Tweaks from '../tweaks';
+import Loans from '../loans';
 
 const defaultState = {
   kings,
@@ -207,6 +208,7 @@ class Game extends Component {
       unrest,
       days,
       firstRequest,
+      loans,
     } = this.state;
 
     console.log('day:', days);
@@ -245,6 +247,7 @@ class Game extends Component {
       let newCoinAmount = coin;
       let newUnrest = unrest;
       let previousCoinAmount = coin;
+      let loansWithInterest = [...loans];
 
       let daysToProcess = daysPassed;
 
@@ -256,6 +259,12 @@ class Game extends Component {
         taxesPaid = Math.floor(newPopulation * DAILY_SALARY * taxes);
 
         costsIncurred = Math.floor(newPopulation * DAILY_COSTS);
+
+        loansWithInterest = loansWithInterest.map((loan) => ({
+          amount: Math.ceil(loan.amount + loan.amount * loan.rate),
+          rate: loan.rate,
+          lender: loan.lender,
+        }));
 
         newCoinAmount = newCoinAmount + taxesPaid - costsIncurred;
 
@@ -270,6 +279,7 @@ class Game extends Component {
         eventProbability: eventProbability + 0.025,
         unrest: newUnrest,
         days: days + daysPassed,
+        loans: loansWithInterest,
       });
     }
   }
@@ -287,7 +297,7 @@ class Game extends Component {
   }
 
   renderAction(actionProps, handler) {
-    const { currentKing } = this.state;
+    const { currentKing, ...state } = this.state;
 
     let finalActionProps = actionProps;
 
@@ -295,10 +305,8 @@ class Game extends Component {
       finalActionProps = actionProps.kings[currentKing];
     }
 
-    console.log(finalActionProps);
-
     return (
-      <Action returnValue={handler} {...finalActionProps} />
+      <Action returnValue={handler} {...finalActionProps} {...state} />
     );
   }
 
@@ -319,6 +327,7 @@ class Game extends Component {
       <div>
         <King king={kings[currentKing]} />
         {started && !decision && <Tweaks paused={paused} taxes={state.taxes} tickRate={tickRate} onChangeTaxRate={this.changeTaxRate} onChangeTickRate={this.changeTickRate} onPause={this.stopTicking} onPlay={this.startTicking} onResign={this.resetGame} />}
+        {started && <Loans loans={state.loans} />}
         {started && <Stats {...state} />}
         {event && event.action && this.renderAction(event.action, event.handler)}
         {(statusMessage) ? statusMessage : this.play()}

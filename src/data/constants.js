@@ -58,13 +58,23 @@ export const LENDERS = [
   {
     name: 'Bank of Lead',
     maxLoans: 10,
-    maxDebt: BASE_POPULATION / 2,
+    maxDebt: BASE_POPULATION * 2,
+    rate: {
+      low: 0.025,
+      med: 0.05,
+      high: 0.075,
+    },
   },
   {
     name: 'Noble Houses',
     maxLoans: 0,
-    maxDebt: BASE_POPULATION * 2,
-  }
+    maxDebt: BASE_POPULATION / 2,
+    rate: {
+      low: 0.00,
+      med: 0.01,
+      high: 0.0525,
+    },
+  },
 ];
 
 export const DAYS_IN_YEAR = DAYS_IN_SEASON * SEASONS.length;

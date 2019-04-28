@@ -14,6 +14,7 @@ export default [
         value: 0,
       },
     ],
+    modifiers: {},
   },
   {
     actionId: 'firstRequest',

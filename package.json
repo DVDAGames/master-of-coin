@@ -6,8 +6,8 @@
   "author": "DVDA Games <info@dvdagames.com>",
   "license": "MIT",
   "scripts": {
-    "start": "parcel ./src/index.html",
-    "build": "yarn clean && parcel build ./src/index.html --out-dir ./docs --no-minify",
+    "start": "parcel src/index.html",
+    "build": "yarn clean && parcel build src/index.html --out-dir docs --public-url ./",
     "clean": "yarn clean:docs",
     "clean:docs": "rimraf ./docs"
   },

@@ -5,6 +5,12 @@
   "main": "index.js",
   "author": "DVDA Games <info@dvdagames.com>",
   "license": "MIT",
+  "browserlist": [
+    "last 1 version",
+    "> 1%",
+    "maintained node versions",
+    "not dead"
+  ],
   "scripts": {
     "start": "parcel src/index.html",
     "build": "yarn clean && parcel build src/index.html --out-dir docs --public-url ./",

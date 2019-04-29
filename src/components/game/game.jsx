@@ -121,10 +121,10 @@ class Game extends Component {
       affection,
       firstRequest: true,
       currentKing: newKing,
-      lenders: Array.concat(defaultState.lenders, lenders),
+      lenders:defaultState.lenders.concat(lenders),
       coin: coin + kings[newKing].defaults.coin + newLoans.reduce((loanAmount, loan) => loanAmount + loan.amount, 0),
-      loans: Array.concat(oldLoans, originatedLoans),
-      initialLoans: Array.concat(oldInitialLoans, newLoans),
+      loans: oldLoans.concat(originatedLoans),
+      initialLoans: oldInitialLoans.concat(newLoans),
       bargaining: kings[newKing].defaults.bargaining,
       transitioningKing: false,
     };

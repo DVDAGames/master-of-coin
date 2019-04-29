@@ -208,13 +208,14 @@ class Game extends Component {
       days,
       weddings,
       numberOfKings,
+      started,
     } = this.state;
 
     this.setState({
       statusMessage: (
         <div>
           <p>{message}</p>
-          <p>You spent {days} days in office, lived through {weddings} weddings, and outlived {numberOfKings} kings.</p>
+          {started && <p>You spent {days} days in office, lived through {weddings} weddings, and outlived {numberOfKings} kings.</p>}
           <button type="button" onClick={this.resetGame}>Reset</button>
         </div>
       )

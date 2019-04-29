@@ -215,7 +215,7 @@ class Game extends Component {
       statusMessage: (
         <div>
           <p>{message}</p>
-          {started && <p>You spent {days} days in office, lived through {weddings} weddings, and outlived {numberOfKings} kings.</p>}
+          {started && <p>You spent {days} days in office, lived through {weddings} weddings, and served {numberOfKings} kings.</p>}
           <button type="button" onClick={this.resetGame}>Reset</button>
         </div>
       )

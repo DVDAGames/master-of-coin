@@ -87,11 +87,42 @@ class Action extends Component {
   constructor(props) {
     super(props);
 
+    this.updateTreasuryValue = this.updateTreasuryValue.bind(this);
     this.updateLoanValue = this.updateLoanValue.bind(this);
     this.handleChoice = this.handleChoice.bind(this);
     this.attemptToBargain = this.attemptToBargain.bind(this);
     this.submitAction = this.submitAction.bind(this);
     this.updateFormState = this.updateFormState.bind(this);
+  }
+
+  componentDidUpdate(previousProps, previousState) {
+    // if our available coin changes, we need to recalculate our treasuryAmount
+    if (previousProps.coin !== this.props.coin) {
+      this.setState({
+        treasuryAmount: (this.props.coin <= 0) ? 0 : (this.props.cost > this.props.coin) ? this.props.coin : this.props.cost,
+      });
+    }
+  }
+
+  updateTreasuryValue(e) {
+    const { target } = e;
+
+    const { coin } = this.props;
+    const { cost } = this.state;
+
+    let treasuryAmount = target.value;
+
+    if (treasuryAmount > cost) {
+      treasuryAmount = cost;
+    }
+
+    if (treasuryAmount > coin) {
+      treasuryAmount = coin;
+    }
+
+    this.setState({
+      treasuryAmount,
+    });
   }
 
   updateLoanValue(e) {
@@ -184,12 +215,14 @@ class Action extends Component {
       loanAmount,
       taxRate,
       chosenLender,
+      cost,
     } = this.state;
 
     const treasuryInputProps = {
       name: 'treasuryAmount',
       label: 'Spend from the Treasury',
       value: treasuryAmount,
+      onBlur: this.updateTreasuryValue,
       onChange: this.updateFormState,
     };
 
@@ -236,6 +269,14 @@ class Action extends Component {
 
     const canBargain = !noBargain && !bargained && bargaining !== 0.00 && bargainingAttempts > 0 && affection > 0;
 
+    const buttonProps = {
+      type: 'Submit',
+    };
+
+    if (loanAmount + treasuryAmount < cost && coin < treasuryAmount) {
+      buttonProps.disabled = true;
+    }
+
     return (
       <form noValidate autoComplete="off" onSubmit={this.submitAction}>
         {bargainMessage !== null && <p>{bargainMessage}</p>}
@@ -244,7 +285,7 @@ class Action extends Component {
         <Input {...treasuryInputProps} />
         <Input {...loanInputProps} />
         <Dropdown {...loanDropdownProps} />
-        <button type="submit">Submit Action</button>
+        <button {...buttonProps}>Submit Action</button>
       </form>
     )
   }

@@ -34,7 +34,7 @@ export default [
       ],
       lenders: [
         {
-          name: 'Neil Stark',
+          name: 'Neil Stork',
           maxLoans: 3,
           maxDebt: 10000,
           rate: 0.00,

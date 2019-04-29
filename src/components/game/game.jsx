@@ -4,6 +4,7 @@ import { generate } from 'shortid';
 
 import randomize from '../../utils/random';
 import randomizeExclude from '../../utils/randomize-exlcude';
+import clamp from '../../utils/clamp';
 
 import {
   SEASONS,
@@ -68,6 +69,7 @@ class Game extends Component {
     this.stopTicking = this.stopTicking.bind(this);
     this.updateTaxRate = this.updateTaxRate.bind(this);
     this.handleAction = this.handleAction.bind(this);
+    this.handleLoanPayment = this.handleLoanPayment.bind(this);
     this.resetGame = this.resetGame.bind(this);
     this.resign = this.resign.bind(this);
   }
@@ -249,6 +251,30 @@ class Game extends Component {
     this.setKing(null);
   }
 
+  handleLoanPayment(paymentInfo) {
+    const {
+      id,
+      amount,
+    } = paymentInfo;
+
+    const { loans, coin } = this.state;
+
+    const paidLoanIndex = loans.findIndex((loan) => loan.id === id);
+
+    const newLoans = [...loans];
+
+    newLoans[paidLoanIndex].amount = newLoans[paidLoanIndex].amount - amount;
+
+    if (newLoans[paidLoanIndex].amount === 0) {
+      newLoans.splice(paidLoanIndex, 1);
+    }
+
+    this.setState({
+      loans: newLoans,
+      coin: coin - amount,
+    });
+  }
+
   handleAction(value) {
     const { days, loans, initialLoans } = this.state;
 
@@ -261,6 +287,7 @@ class Game extends Component {
       bargainingAttempts,
       bargained,
       days: daysPassed,
+      cost,
     } = value;
 
     console.log(value);
@@ -271,20 +298,22 @@ class Game extends Component {
       decision: false,
       taxes: taxRate,
       coin: this.state.coin - treasuryAmount,
-      affection: this.state.affection + (modifiers.affection || 0),
+      affection: clamp(this.state.affection + (modifiers.affection || 0), -100, 100),
       affinity: {
-        people: this.state.affinity.people + (modifiers.affinity.people || 0),
-        nobles: this.state.affinity.nobles + (modifiers.affinity.nobles || 0),
+        people: clamp(this.state.affinity.people + (modifiers.affinity.people || 0), 0, 100),
+        nobles: clamp(this.state.affinity.nobles + (modifiers.affinity.nobles || 0), 0, 100),
       },
-      unrest: this.state.unrest + (modifiers.unrest || 0),
+      unrest: clamp(this.state.unrest + (modifiers.unrest || 0), 0, 100),
     };
 
-    if (parseInt(loanAmount, 10) > 0 && chosenLender) {
+    const parsedLoanAmount = parseInt(loanAmount, 10);
+
+    if (parsedLoanAmount > 0 && chosenLender) {
       const [ lenderId, loanRate ] = chosenLender.split(':');
 
       const newLoan = {
         id: generate(),
-        amount: parseInt(loanAmount, 10),
+        amount: parsedLoanAmount,
         lender: parseInt(lenderId, 10),
         rate: parseFloat(loanRate),
         origination: days,
@@ -298,6 +327,11 @@ class Game extends Component {
 
       stateObject.loans = newLoans;
       stateObject.initialLoans = newInitialLoans;
+
+      // handle loan overages by adding them to the treasury
+      if (parsedLoanAmount > cost) {
+        stateObject.coin = stateObject.coin + parsedLoanAmount - cost;
+      }
     }
 
     this.setState(stateObject, this.tick(daysPassed, true, this.startTicking));
@@ -393,6 +427,12 @@ class Game extends Component {
 
         const unrestDifference = (newCoinAmount > previousCoinAmount) ? -0.2 : 0.2;
 
+        if (taxes > BASE_TAX_RATE) {
+          unrestDifference = unrestDifference + 2 * taxes - BASE_TAX_RATE;
+        } else if(taxes < BASE_TAX_RATE) {
+          unrestDifference = unrestDifference + 1 * BASE_TAX_RATE - taxes;
+        }
+
         newUnrest = newUnrest + unrestDifference;
 
         daysToProcess--;
@@ -460,7 +500,7 @@ class Game extends Component {
       <div>
         <King king={kings[currentKing]} />
         {!statusMessage && started && !decision && <Tweaks paused={paused} taxes={state.taxes} tickRate={tickRate} onChangeTaxRate={this.changeTaxRate} onChangeTickRate={this.changeTickRate} onPause={this.stopTicking} onPlay={this.startTicking} onResign={this.resign} />}
-        {!statusMessage && started && <Loans loans={state.loans} lenders={state.lenders} initialLoans={state.initialLoans} />}
+        {!statusMessage && started && <Loans coin={state.coin} loans={state.loans} lenders={state.lenders} initialLoans={state.initialLoans} onPayment={this.handleLoanPayment} />}
         {!statusMessage && started && <Stats {...state} />}
         {!statusMessage && event && event.action && this.renderAction(event.action, event.handler)}
         {(statusMessage) ? statusMessage : this.play()}

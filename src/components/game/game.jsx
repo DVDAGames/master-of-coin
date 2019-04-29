@@ -56,6 +56,7 @@ const defaultState = {
   seasonsPassed: 0,
   transitioningKing: true,
   weddings: 0,
+  numberOfKings: 0,
 };
 
 class Game extends Component {
@@ -118,6 +119,7 @@ class Game extends Component {
     const stateObject = {
       affinity,
       affection,
+      firstRequest: true,
       currentKing: newKing,
       lenders: Array.concat(defaultState.lenders, lenders),
       coin: coin + kings[newKing].defaults.coin + newLoans.reduce((loanAmount, loan) => loanAmount + loan.amount, 0),
@@ -141,6 +143,7 @@ class Game extends Component {
       stateObject.taxes = taxes;
       stateObject.affinity = affinity;
       stateObject.affection = affection;
+      stateObject.numberOfKings = 1;
     }
 
     this.setState(stateObject, (typeof callback === 'function') ? callback : undefined);
@@ -201,10 +204,17 @@ class Game extends Component {
   }
 
   statusMessage(message) {
+    const {
+      days,
+      weddings,
+      numberOfKings,
+    } = this.state;
+
     this.setState({
       statusMessage: (
         <div>
           <p>{message}</p>
+          <p>You spent {days} days in office, lived through {weddings} weddings, and outlived {numberOfKings} kings.</p>
           <button type="button" onClick={this.resetGame}>Reset</button>
         </div>
       )
@@ -215,11 +225,12 @@ class Game extends Component {
     if (value === 0) {
       this.statusMessage('Resigning in such a tumultuous time is tantamount to treason. You\'ll spend the rest of your days in the dungeons.');
     } else {
-      const { currentKing } = this.state;
+      const { currentKing, numberOfKings } = this.state;
 
       this.setState({
         decision: false,
         event: {},
+        numberOfKings: numberOfKings + 1,
       }, () => {
         this.setKing(currentKing, this.startTicking);
       });

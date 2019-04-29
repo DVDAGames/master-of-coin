@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 
 import { SEASONS, DAYS_IN_YEAR } from '../../data/constants';
 
@@ -27,8 +27,10 @@ const Stats = props => {
     <dl>
       <dt>Treasury</dt>
       <dd>{props.coin}</dd>
-      <dt>Minus Loans</dt>
-      <dd>{calculateCoin()}</dd>
+      {props.loans.length > 0 && <Fragment>
+        <dt>Minus Loans</dt>
+        <dd>{calculateCoin()}</dd>
+      </Fragment>}
       <dt>Population</dt>
       <dd>{props.population}</dd>
       <dt>Season</dt>
@@ -37,8 +39,12 @@ const Stats = props => {
       <dd>{calculateTime()}</dd>
       <dt>Unrest</dt>
       <dd>{props.unrest}</dd>
-      <dt>Weddings</dt>
-      <dd>{props.weddings}</dd>
+      {props.weddings > 0 && <Fragment>
+        <dt>Weddings</dt>
+        <dd>{props.weddings}</dd>
+      </Fragment>}
+      <dt>Number of Kings</dt>
+      <dd>{props.numberOfKings}</dd>
     </dl>
   );
 }

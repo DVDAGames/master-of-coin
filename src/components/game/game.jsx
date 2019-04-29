@@ -54,6 +54,8 @@ const defaultState = {
   decision: false,
   firstRequest: true,
   seasonsPassed: 0,
+  transitioningKing: true,
+  weddings: 0,
 };
 
 class Game extends Component {
@@ -64,12 +66,14 @@ class Game extends Component {
 
     this.startGame = this.startGame.bind(this);
     this.tick = this.tick.bind(this);
+    this.finalizeTick = this.finalizeTick.bind(this);
     this.renderAction = this.renderAction.bind(this);
     this.startTicking = this.startTicking.bind(this);
     this.stopTicking = this.stopTicking.bind(this);
     this.updateTaxRate = this.updateTaxRate.bind(this);
     this.handleAction = this.handleAction.bind(this);
     this.handleLoanPayment = this.handleLoanPayment.bind(this);
+    this.kingTransition = this.kingTransition.bind(this);
     this.resetGame = this.resetGame.bind(this);
     this.resign = this.resign.bind(this);
   }
@@ -80,7 +84,7 @@ class Game extends Component {
     this.setKing(currentKing);
   }
 
-  setKing(currentKing = null) {
+  setKing(currentKing = null, callback) {
     let currentStateObject = this.state;
 
     if (currentKing === null) {
@@ -91,7 +95,7 @@ class Game extends Component {
 
     const ignoreKings = [];
 
-    if (currentKing !== null) {
+    if (currentKing !== null || callback === true) {
       ignoreKings.push(currentKing);
     }
 
@@ -120,21 +124,26 @@ class Game extends Component {
       loans: Array.concat(oldLoans, originatedLoans),
       initialLoans: Array.concat(oldInitialLoans, newLoans),
       bargaining: kings[newKing].defaults.bargaining,
+      transitioningKing: false,
     };
 
-    if (currentKing === null) {
+    if (currentKing === null || callback === true) {
       const {
         population,
         unrest,
         taxes,
+        affinity,
+        affection,
       } = kings[newKing].defaults;
 
       stateObject.population = population;
       stateObject.unrest = unrest;
       stateObject.taxes = taxes;
+      stateObject.affinity = affinity;
+      stateObject.affection = affection;
     }
 
-    this.setState(stateObject);
+    this.setState(stateObject, (typeof callback === 'function') ? callback : undefined);
   }
 
   increaseDays(daysToAdd = 1) {
@@ -202,6 +211,21 @@ class Game extends Component {
     });
   }
 
+  kingTransition(value) {
+    if (value === 0) {
+      this.statusMessage('Resigning in such a tumultuous time is tantamount to treason. You\'ll spend the rest of your days in the dungeons.');
+    } else {
+      const { currentKing } = this.state;
+
+      this.setState({
+        decision: false,
+        event: {},
+      }, () => {
+        this.setKing(currentKing, this.startTicking);
+      });
+    }
+  }
+
   startGame(value) {
     if (value === 0) {
       this.statusMessage('Refusing this appointment is tantamount to treason. You\'ll spend the rest of your days in the dungeons.');
@@ -243,11 +267,11 @@ class Game extends Component {
   resetGame() {
     const { currentKing } = this.state;
 
+    const king = currentKing;
+
     this.stopTicking();
 
-    this.setState(defaultState);
-
-    this.setKing(currentKing);
+    this.setState(defaultState, () => this.setKing(king, true));
   }
 
   handleLoanPayment(paymentInfo) {
@@ -275,7 +299,7 @@ class Game extends Component {
   }
 
   handleAction(value) {
-    const { days, loans, initialLoans } = this.state;
+    const { days, loans, initialLoans, population } = this.state;
 
     const {
       taxRate,
@@ -287,6 +311,7 @@ class Game extends Component {
       bargained,
       days: daysPassed,
       cost,
+      wedding,
     } = value;
 
     const stateObject = {
@@ -300,6 +325,10 @@ class Game extends Component {
       },
       unrest: clamp(this.state.unrest + (modifiers.unrest || 0), 0, 100),
     };
+
+    if (modifiers.population) {
+      stateObject.population = Math.floor(population + modifiers.population * population);
+    }
 
     // adjust affection based on bargaining status
     if (bargained) {
@@ -338,10 +367,10 @@ class Game extends Component {
       }
     }
 
-    this.setState(stateObject, this.tick(daysPassed, true, this.startTicking));
+    this.setState(stateObject, this.tick(daysPassed, true, this.startTicking, wedding));
   }
 
-  tick(daysPassed = 1, skipEvent = false, callback) {
+  tick(daysPassed = 1, skipEvent = false, callback, weddingCheck = false) {
     const {
       affection,
       affinity,
@@ -363,7 +392,7 @@ class Game extends Component {
 
     const totalCoin = coin - totalLoans;
 
-    const tooMuchDebt = ((totalCoin < -250000) || (totalCoin < -100000 && unrest > 50)) && coin < totalLoans * 2;
+    const tooMuchDebt = ((totalCoin < -250000) || (totalCoin < -100000 && unrest > 50)) && coin < totalLoans * 2 && unrest > 50;
 
     const tooMuchUnrest = (unrest > 75 && people < 50 && nobles < 50) || (unrest > 50 && people < 10 && nobles < 10);
 
@@ -378,6 +407,14 @@ class Game extends Component {
     const peopleUprising = people <= -99 && nobles < 95;
 
     const noblesUprising = nobles <= -75 && people < 90;
+
+    const tooLittlePopulation = population < 5000;
+
+    if (tooLittlePopulation) {
+      this.stopTicking();
+
+      return this.statusMessage('Plague, famine, and war have taken too much of the population for the kingdom to retain its strength. The remaining survivors have scattered to their keeps in hopes of strengthening their numbers and rekindling the kingdom that once was.');
+    }
 
     if (tooLittleAffection) {
       this.stopTicking();
@@ -505,11 +542,47 @@ class Game extends Component {
         event: {},
         season: newSeason,
         seasonsPassed: (newSeason !== season) ? seasonsPassed + 1 : seasonsPassed,
-      });
+      }, () => this.finalizeTick(weddingCheck, callback));
+    }
+  }
 
-      if (typeof callback === 'function') {
-        callback();
-      }
+  finalizeTick(weddingCheck, callback) {
+    if (weddingCheck && randomize(1, 20) < 10) {
+      const {
+        kings,
+        currentKing,
+        weddings,
+      } = this.state;
+
+      const event = {
+        action: {
+          actionId: 'killedAtWedding',
+          message: `Leading the realm is a dangerous business. Unfortunately, ${kings[currentKing].name} met their demise at the recent wedding. You can attempt to retain your position in the transition of leadership, or try to resign.`,
+          options: [
+            {
+              id: 'startGame',
+              action: 'Continue as Master of Coin',
+              value: 1,
+            },
+            {
+              id: 'quitGame',
+              action: 'Resign as Master of Coin',
+              value: 0,
+            },
+          ],
+        },
+        handler: this.kingTransition,
+      };
+
+      this.setState({
+        event,
+        decision: true,
+        transitioningKing: true,
+        eventProbability: 0.00,
+        weddings: weddings + 1,
+      });
+    } else if (typeof callback === 'function') {
+      callback();
     }
   }
 
@@ -549,15 +622,16 @@ class Game extends Component {
       started,
       decision,
       tickRate,
+      transitioningKing,
       ...state
     } = this.state;
 
     return (
       <div>
-        <King king={kings[currentKing]} />
-        {!statusMessage && started && !decision && <Tweaks paused={paused} taxes={state.taxes} tickRate={tickRate} onChangeTaxRate={this.changeTaxRate} onChangeTickRate={this.changeTickRate} onPause={this.stopTicking} onPlay={this.startTicking} onResign={this.resign} />}
-        {!statusMessage && started && <Loans coin={state.coin} loans={state.loans} lenders={state.lenders} initialLoans={state.initialLoans} onPayment={this.handleLoanPayment} />}
-        {!statusMessage && started && <Stats {...state} />}
+        {!transitioningKing && <King king={kings[currentKing]} />}
+        {!statusMessage && started && !decision && !transitioningKing && <Tweaks paused={paused} taxes={state.taxes} tickRate={tickRate} onChangeTaxRate={this.changeTaxRate} onChangeTickRate={this.changeTickRate} onPause={this.stopTicking} onPlay={this.startTicking} onResign={this.resign} />}
+        {!statusMessage && started && !transitioningKing && <Loans coin={state.coin} loans={state.loans} lenders={state.lenders} initialLoans={state.initialLoans} onPayment={this.handleLoanPayment} />}
+        {!statusMessage && started && !transitioningKing && <Stats {...state} />}
         {!statusMessage && event && event.action && this.renderAction(event.action, event.handler)}
         {(statusMessage) ? statusMessage : this.play()}
       </div>

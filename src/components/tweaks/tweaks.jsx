@@ -14,10 +14,6 @@ const Tweaks = props => {
         <button type="button" onClick={pauseButtonAction}>{pauseButtonText}</button>
       </div>
       <div>
-        <label htmlFor="taxRate">Tax Rate (%)</label>
-        <input type="number" id="taxRate" name="taxRate" defaultValue={props.taxes} onChange={props.onChangeTaxRate} />
-      </div>
-      <div>
         <label htmlFor="tickRate">Speed</label>
         <select id="tickRate" name="tickRate" defaultValue={props.tickRate} onChange={props.onChangeTickRate}>
           {renderTickRates()}

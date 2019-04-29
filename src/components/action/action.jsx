@@ -82,6 +82,7 @@ class Action extends Component {
     taxRate: this.props.taxes,
     days: this.props.daysPassed,
     modifiers: this.props.modifiers,
+    wedding: this.props.wedding || false,
   };
 
   constructor(props) {
@@ -95,11 +96,15 @@ class Action extends Component {
     this.updateFormState = this.updateFormState.bind(this);
   }
 
-  componentDidUpdate(previousProps, previousState) {
+  componentDidUpdate(previousProps) {
     // if our available coin changes, we need to recalculate our treasuryAmount
     if (previousProps.coin !== this.props.coin) {
+      const treasuryAmount = (this.props.coin <= 0) ? 0 : (this.state.cost > this.props.coin) ? this.props.coin : this.state.cost;
+      const loanAmount = (treasuryAmount <= 0) ? Math.ceil(this.state.cost / 1000) * 1000 : (this.state.cost > treasuryAmount) ? Math.ceil((this.state.cost - treasuryAmount) / 1000) * 1000 : 0;
+
       this.setState({
-        treasuryAmount: (this.props.coin <= 0) ? 0 : (this.props.cost > this.props.coin) ? this.props.coin : this.props.cost,
+        treasuryAmount,
+        loanAmount,
       });
     }
   }

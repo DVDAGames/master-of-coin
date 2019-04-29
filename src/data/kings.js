@@ -167,4 +167,72 @@ export default [
       bargaining: 0.325,
     },
   },
+  {
+    name: 'Moron Heyboy',
+    defaults: {
+      coin: randomize(500, 10000),
+      unrest: randomize(0, 50),
+      population: randomize(MIN_POPULATION, MAX_POPULATION),
+      taxes: BASE_TAX_RATE,
+      affection: randomize(0, 50),
+      affinity: {
+        people: randomize(0, 50),
+        nobles: randomize(0, 25),
+      },
+      loans: [
+        {
+          id: generate(),
+          amount: 10000,
+          rate: 0.01,
+          // this should make the lender our new The North lender below
+          // once it gets concatenated with the original LENDERS Array
+          lender: LENDERS.length,
+          origination: 0,
+        }
+      ],
+      lenders: [
+        {
+          name: 'The Fire Islands',
+          maxLoans: 10,
+          maxDebt: 150000,
+          rate: 0.02,
+        },
+      ],
+      bargaining: 0.425,
+    },
+  },
+  {
+    name: 'Bob Stork',
+    defaults: {
+      coin: randomize(500, 10000),
+      unrest: randomize(0, 50),
+      population: randomize(MIN_POPULATION, MAX_POPULATION),
+      taxes: BASE_TAX_RATE,
+      affection: randomize(25, 50),
+      affinity: {
+        people: randomize(25, 50),
+        nobles: randomize(10, 25),
+      },
+      loans: [
+        {
+          id: generate(),
+          amount: 25000,
+          rate: 0.01,
+          // this should make the lender our new The North lender below
+          // once it gets concatenated with the original LENDERS Array
+          lender: LENDERS.length,
+          origination: 0,
+        }
+      ],
+      lenders: [
+        {
+          name: 'The Northern Lords',
+          maxLoans: 7,
+          maxDebt: 100000,
+          rate: 0.02,
+        },
+      ],
+      bargaining: 0.425,
+    },
+  },
 ];

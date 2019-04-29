@@ -35,6 +35,13 @@ export const BASE_POPULATION = 500000;
 
 export const POPULATION_VARIANCE = 0.025;
 
+export const TAXABLE_POPULATION = [
+  0.50,
+  0.30,
+  0.60,
+  0.75,
+];
+
 export const SEASONS = [
   {
     label: 'Fall',

@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
 
+import { generate } from 'shortid';
+
 import randomize from '../../utils/random';
 import randomizeExclude from '../../utils/randomize-exlcude';
 
@@ -11,6 +13,7 @@ import {
   TICK_RATES,
   LENDERS,
   DAYS_IN_SEASON,
+  TAXABLE_POPULATION,
 } from '../../data/constants';
 
 import kings from '../../data/kings';
@@ -231,7 +234,7 @@ class Game extends Component {
       newSeason = newSeason + 1;
     }
 
-    if (season > SEASONS.length - 1) {
+    if (newSeason > SEASONS.length - 1) {
       newSeason = 0;
     }
 
@@ -247,15 +250,57 @@ class Game extends Component {
   }
 
   handleAction(value) {
+    const { days, loans, initialLoans } = this.state;
+
+    const {
+      taxRate,
+      treasuryAmount,
+      loanAmount,
+      chosenLender,
+      modifiers,
+      bargainingAttempts,
+      bargained,
+      days: daysPassed,
+    } = value;
+
     console.log(value);
 
-    // TODO: handle modifiers to affinity and affection here
+    // TODO: handle bargaining adjustment to affection here
 
-    this.setState({
+    const stateObject = {
       decision: false,
-    });
+      taxes: taxRate,
+      coin: this.state.coin - treasuryAmount,
+      affection: this.state.affection + (modifiers.affection || 0),
+      affinity: {
+        people: this.state.affinity.people + (modifiers.affinity.people || 0),
+        nobles: this.state.affinity.nobles + (modifiers.affinity.nobles || 0),
+      },
+      unrest: this.state.unrest + (modifiers.unrest || 0),
+    };
 
-    this.tick(value.days, true, this.startTicking);
+    if (parseInt(loanAmount, 10) > 0 && chosenLender) {
+      const [ lenderId, loanRate ] = chosenLender.split(':');
+
+      const newLoan = {
+        id: generate(),
+        amount: parseInt(loanAmount, 10),
+        lender: parseInt(lenderId, 10),
+        rate: parseFloat(loanRate),
+        origination: days,
+      };
+
+      const newLoans = [...loans];
+      const newInitialLoans = [...initialLoans];
+
+      newLoans.push(newLoan);
+      newInitialLoans.push(newLoan);
+
+      stateObject.loans = newLoans;
+      stateObject.initialLoans = newInitialLoans;
+    }
+
+    this.setState(stateObject, this.tick(daysPassed, true, this.startTicking));
   }
 
   tick(daysPassed = 1, skipEvent = false, callback) {
@@ -316,7 +361,19 @@ class Game extends Component {
 
         newPopulation = Math.floor(newPopulation + populationChange);
 
-        taxesPaid = Math.floor(newPopulation * DAILY_SALARY * taxes);
+        taxesPaid = Math.floor(newPopulation * TAXABLE_POPULATION[newSeason] * DAILY_SALARY * taxes);
+
+        // modify tax income passed on days spent
+        // working on current event
+        if (daysPassed > 10) {
+          taxesPaid = taxesPaid * 0.75;
+        } else if (daysPassed > 30) {
+          taxesPaid = taxesPaid * 0.50;
+        } else if (daysPassed > 45) {
+          taxesPaid = taxesPaid * 0.25;
+        } else if (daysPassed > 60) {
+          taxesPaid = taxesPaid * 0.10;
+        }
 
         costsIncurred = Math.floor(newPopulation * DAILY_COSTS);
 

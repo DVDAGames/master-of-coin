@@ -68,17 +68,17 @@ const getLenderRate = (loans, lenders, id) => {
   return rate;
 }
 class Action extends Component {
-  numberOfLoans = {};
-  debtPerLender = {};
+  numberOfLoans = getNumberOfLoansPerLender(this.props.loans, this.props.lenders);
+  debtPerLender = getDebtsPerLender(this.props.loans, this.props.lenders);
 
   state = {
     bargainingAttempts: 2,
     bargained: false,
     bargainMessage: null,
     cost: this.props.cost,
-    loanAmount: (this.props.cost > this.props.coin) ? Math.ceil((this.props.cost - this.props.coin) / 1000) * 1000 : 0,
-    treasuryAmount: (this.props.cost > this.props.coin) ? this.props.coin : this.props.cost,
-    chosenLender: 0,
+    loanAmount: (this.props.coin <= 0) ? Math.ceil(this.props.cost / 1000) * 1000 : (this.props.cost > this.props.coin) ? Math.ceil((this.props.cost - this.props.coin) / 1000) * 1000 : 0,
+    treasuryAmount: (this.props.coin <= 0) ? 0 : (this.props.cost > this.props.coin) ? this.props.coin : this.props.cost,
+    chosenLender: `${getLenderWithLeastLoans(this.numberOfLoans)}:${getLenderRate(this.props.loans, this.props.lenders, getLenderWithLeastLoans(this.numberOfLoans))}`,
     taxRate: this.props.taxes,
     days: this.props.daysPassed,
     modifiers: this.props.modifiers,
@@ -92,31 +92,6 @@ class Action extends Component {
     this.attemptToBargain = this.attemptToBargain.bind(this);
     this.submitAction = this.submitAction.bind(this);
     this.updateFormState = this.updateFormState.bind(this);
-  }
-
-  componentDidMount() {
-    const { loans, coin, lenders } = this.props;
-    const { cost } = this.state;
-
-    this.numberOfLoans = getNumberOfLoansPerLender(loans, lenders);
-
-    this.debtPerLender = getDebtsPerLender(loans, lenders);
-
-    const lenderId = getLenderWithLeastLoans(this.numberOfLoans);
-
-    const stateObject = {
-      chosenLender: `${lenderId}:${getLenderRate(loans, lenders, lenderId)}`,
-    };
-
-    if (coin <= 0) {
-      stateObject.treasuryAmount = 0;
-
-      stateObject.loanAmount = Math.ceil(cost / 1000) * 1000;
-    }
-
-    this.setState({
-      stateObject,
-    });
   }
 
   updateLoanValue(e) {

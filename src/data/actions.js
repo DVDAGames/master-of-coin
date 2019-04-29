@@ -24,6 +24,7 @@ export default [
         cost: 10000,
         daysPassed: 20,
         modifiers: {
+          unrest: -10,
           affinity: {
             people: 25,
             nobles: 15,
@@ -36,6 +37,7 @@ export default [
         cost: 20000,
         daysPassed: 30,
         modifiers: {
+          unrest: 5,
           affinity: {
             people: -25,
             nobles: -10,
@@ -48,6 +50,7 @@ export default [
         cost: 40000,
         daysPassed: 15,
         modifiers: {
+          unrest: -5,
           affinity: {
             people: 5,
             nobles: 5,
@@ -60,6 +63,7 @@ export default [
         cost: 100000,
         daysPassed: 60,
         modifiers: {
+          unrest: -20,
           affinity: {
             people: 45,
             nobles: 5,
@@ -72,6 +76,7 @@ export default [
         cost: 750000,
         daysPassed: 90,
         modifiers: {
+          unrest: 1,
           affinity: {
             people: 10,
             nobles: 5,

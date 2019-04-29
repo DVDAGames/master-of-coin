@@ -44,3 +44,8 @@ let's do this
 - **20:40**: Tea break and getting ready for *Game of Thrones*; fully except that I have to enter the Jam instead of the Compo
 - **21:00**: *48 hours have passed...*; Compo Submission Deadline
 - **21:01**: *Game of Thrones*
+
+#2019-04-29
+
+- **13:00**: Got a chance to come back to this
+- **14:15**: Updating stats and affinity modifiers based on decisions by Master of Coin works

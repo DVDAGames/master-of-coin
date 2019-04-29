@@ -1,14 +1,21 @@
 import React from 'react';
 
 const Dropdown = props => {
-  const renderOptions = () => props.options.map((option) => (
-    <option key={`option-${props.name}-${option.value}`} value={option.value}>{option.label}</option>
+  const {
+    name,
+    options,
+    label,
+    ...otherProps
+  } = props;
+
+  const renderOptions = () => options.map((option) => (
+    <option key={`option-${name}-${option.value}`} value={option.value}>{option.label}</option>
   ));
 
   return (
     <div>
-      <label htmlFor={props.name}>{props.label}</label>
-      <select id={props.name} name={props.name} defaultValue={props.value}>
+      <label htmlFor={name}>{label}</label>
+      <select id={name} name={name} {...otherProps}>
         {renderOptions()}
       </select>
     </div>

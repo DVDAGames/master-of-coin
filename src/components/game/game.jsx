@@ -191,16 +191,20 @@ class Game extends Component {
     }
   }
 
+  statusMessage(message) {
+    this.setState({
+      statusMessage: (
+        <div>
+          <p>{message}</p>
+          <button type="button" onClick={this.resetGame}>Reset</button>
+        </div>
+      )
+    });
+  }
+
   startGame(value) {
     if (value === 0) {
-      this.setState({
-        statusMessage: (
-          <div>
-            <p>Refusing the King's appointment is tantamount to treason. You'll spend the rest of your days in the dungeons.</p>
-            <button type="button" onClick={this.resetGame}>Reset</button>
-          </div>
-        )
-      });
+      this.statusMessage('Refusing this appointment is tantamount to treason. You\'ll spend the rest of your days in the dungeons.');
     } else {
       this.setState({
         started: true,
@@ -217,14 +221,7 @@ class Game extends Component {
   resign() {
     this.stopTicking();
 
-    this.setState({
-      statusMessage: (
-        <div>
-          <p>Resigning as Master of Coin without being dismissed is tantamount to treason. You'll spend the rest of your days in the dungeons.</p>
-          <button type="button" onClick={this.resetGame}>Reset</button>
-        </div>
-      )
-    });
+    this.statusMessage('Resigning as Master of Coin without being dismissed is tantamount to treason. You\'ll spend the rest of your days in the dungeons.');
   }
 
   checkSeason(days, season) {
@@ -244,11 +241,13 @@ class Game extends Component {
   }
 
   resetGame() {
+    const { currentKing } = this.state;
+
     this.stopTicking();
 
     this.setState(defaultState);
 
-    this.setKing(null);
+    this.setKing(currentKing);
   }
 
   handleLoanPayment(paymentInfo) {
@@ -290,10 +289,6 @@ class Game extends Component {
       cost,
     } = value;
 
-    console.log(value);
-
-    // TODO: handle bargaining adjustment to affection here
-
     const stateObject = {
       decision: false,
       taxes: taxRate,
@@ -305,6 +300,15 @@ class Game extends Component {
       },
       unrest: clamp(this.state.unrest + (modifiers.unrest || 0), 0, 100),
     };
+
+    // adjust affection based on bargaining status
+    if (bargained) {
+      if (bargainingAttempts === 0) {
+        stateObject.affection = clamp(stateObject.affection - ((modifiers.affection || 0) * 0.75), -100, 100);
+      } else if (bargainingAttempts === 1) {
+        stateObject.affection = clamp(stateObject.affection - ((modifiers.affection || 0) * 0.25), -100, 100);
+      }
+    }
 
     const parsedLoanAmount = parseInt(loanAmount, 10);
 
@@ -339,6 +343,8 @@ class Game extends Component {
 
   tick(daysPassed = 1, skipEvent = false, callback) {
     const {
+      affection,
+      affinity,
       population,
       season,
       taxes,
@@ -351,7 +357,57 @@ class Game extends Component {
       seasonsPassed,
     } = this.state;
 
-    // TODO: handle checking for affection and affinity failures here
+    const { people, nobles } = affinity;
+
+    const totalLoans = loans.reduce((totalLoans, loan) => totalLoans + loan.amount, 0);
+
+    const totalCoin = coin - totalLoans;
+
+    const tooMuchDebt = ((totalCoin < -250000) || (totalCoin < -100000 && unrest > 50)) && coin < totalLoans * 2;
+
+    const tooMuchUnrest = (unrest > 75 && people < 50 && nobles < 50) || (unrest > 50 && people < 10 && nobles < 10);
+
+    const tooLittleAffection = affection < -40;
+
+    const tooLittleAffinity = people < 0 && nobles < 0;
+
+    const peopleRevolt = people < -75;
+
+    const noblesRevolt = nobles < -25;
+
+    const peopleUprising = people <= -99 && nobles < 95;
+
+    const noblesUprising = nobles <= -75 && people < 90;
+
+    if (tooLittleAffection) {
+      this.stopTicking();
+
+      return this.statusMessage('The crown has lost faith in your abilities as Master of Coin. You\'ve been relieved of your duties and sent to the dungeons.');
+    }
+
+    if (tooMuchUnrest) {
+      this.stopTicking();
+
+      return this.statusMessage('The kingdom has fallen into chaos due to massive civil unrest. The various regions and noble houses have seceded and formed their own kingdoms.');
+    }
+
+    if (tooMuchDebt) {
+      this.stopTicking();
+
+      return this.statusMessage('The kingdom has amassed too much debt and is now insolvent. Your debtors have called in their loans and nobility has lost faith in the crown. You\'ve found yourself in the dungeons.');
+    }
+
+    if (tooLittleAffinity && peopleRevolt || peopleUprising) {
+      this.stopTicking();
+
+      return this.statusMessage('The people have risen up in rebellion and overthrown the nobility. Heads will roll.');
+    }
+
+    if (tooLittleAffinity && noblesRevolt || noblesUprising) {
+      this.stopTicking();
+
+      return this.statusMessage('The Noble Houses have banded together in rebellion and removed the current Court from power. You\'ve found yourself locked in the dungeons.');
+    }
 
     if (!skipEvent && Math.random() <= eventProbability) {
       this.stopTicking();

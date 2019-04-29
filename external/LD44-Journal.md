@@ -51,4 +51,4 @@ let's do this
 - **14:15**: Updating stats and affinity modifiers based on decisions by Master of Coin works
 - **15:45**: Was making great progress until running into a stupid bug where paying off a loan while in a decision point doesn't adjust the logic to make sure you can pay the amount from the treasury
 - **16:05**: Fixed the bug; I'm an idiot
-
+- **17:00**: Finished adding failure states

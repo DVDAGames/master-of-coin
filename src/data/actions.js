@@ -1,7 +1,7 @@
 export default [
   {
     actionId: 'welcome',
-    message: 'Congratulations on your new appointment as Master of Coin. The mysterious circumstances surrounding your predecessor\'s death are most unfortunate, but the kingdom must continue to operate even as we mourn our loss.',
+    message: 'Congratulations on your new appointment as Master of Coin. The mysterious circumstances surrounding your predecessor\'s disappearance are most unfortunate, but the kingdom must continue to operate even as we mourn.',
     options: [
       {
         id: 'startGame',

@@ -1,6 +1,10 @@
 import React, { Fragment } from 'react';
 
 const Loans = props => {
+  const makePayment = (loanId, payInFull) => {
+    // TODO: handle loan payments here
+  };
+
   const mapLoans = () => {
     return props.loans
       .sort((a, b) => b.rate - a.rate)
@@ -10,6 +14,8 @@ const Loans = props => {
         return (
           <li key={`loan-${loan.id}`}>
             <strong>{props.lenders[loan.lender].name}</strong> {initialLoan.amount} @ {(loan.rate * 100)}% => {loan.amount}
+            <button type="button" onClick={() => makePayment(loan.id)}>Make Payment</button>
+            <button type="button" onClick={() => makePayment(loan.id, true)}>Pay Off</button>
           </li>
         )
       })

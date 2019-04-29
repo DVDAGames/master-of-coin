@@ -67,12 +67,25 @@ export default [
           affection: 25,
         },
       },
+      {
+        message: 'The King needs to raise an army to fight the zombies in the Far North.',
+        cost: 750000,
+        daysPassed: 90,
+        modifiers: {
+          affinity: {
+            people: 10,
+            nobles: 5,
+          },
+          affection: 30,
+        },
+      },
     ],
   },
   {
     actionId: 'northernRebellion',
     message: 'The Northerners are attempting to rebel. The army needs war time funding.',
     cost: 25000,
+    noBargain: true,
     daysPassed: 30,
     modifiers: {
       unrest: 10,

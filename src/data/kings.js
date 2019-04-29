@@ -27,8 +27,9 @@ export default [
         {
           id: generate(),
           amount: 1000,
-          rate: 0.00001,
+          rate: 0.01,
           lender: 1,
+          origination: 0,
         },
       ],
       lenders: [
@@ -60,6 +61,7 @@ export default [
           amount: 7500,
           rate: 0.05,
           lender: 0,
+          origination: 0,
         },
       ],
       lenders: [
@@ -91,7 +93,7 @@ export default [
           name: 'House Sinister',
           maxLoans: 0,
           maxDebt: 50000,
-          rate: 0.0001,
+          rate: 0.01,
         },
       ],
       bargaining: 0.00,
@@ -117,6 +119,7 @@ export default [
           // this should make the lender our new Free Merchants lender below
           // once it gets concatenated with the original LENDERS Array
           lender: LENDERS.length,
+          origination: 0,
         }
       ],
       lenders: [
@@ -146,10 +149,11 @@ export default [
         {
           id: generate(),
           amount: 5000,
-          rate: 0.0025,
+          rate: 0.025,
           // this should make the lender our new The North lender below
           // once it gets concatenated with the original LENDERS Array
           lender: LENDERS.length,
+          origination: 0,
         }
       ],
       lenders: [
@@ -157,7 +161,7 @@ export default [
           name: 'The North',
           maxLoans: 5,
           maxDebt: 100000,
-          rate: 0.0025,
+          rate: 0.025,
         },
       ],
       bargaining: 0.325,

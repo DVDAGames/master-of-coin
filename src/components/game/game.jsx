@@ -10,6 +10,7 @@ import {
   BASE_TAX_RATE,
   TICK_RATES,
   LENDERS,
+  DAYS_IN_SEASON,
 } from '../../data/constants';
 
 import kings from '../../data/kings';
@@ -48,6 +49,7 @@ const defaultState = {
   started: false,
   decision: false,
   firstRequest: true,
+  seasonsPassed: 0,
 };
 
 class Game extends Component {
@@ -97,13 +99,20 @@ class Game extends Component {
       loans: newLoans,
     } = kings[newKing].defaults;
 
+    const originatedLoans = newLoans.map(({ origination, ...loan}) => {
+      return {
+        origination: currentStateObject.days,
+        ...loan,
+      };
+    });
+
     const stateObject = {
       affinity,
       affection,
       currentKing: newKing,
       lenders: Array.concat(defaultState.lenders, lenders),
       coin: coin + kings[newKing].defaults.coin + newLoans.reduce((loanAmount, loan) => loanAmount + loan.amount, 0),
-      loans: Array.concat(oldLoans, newLoans),
+      loans: Array.concat(oldLoans, originatedLoans),
       initialLoans: Array.concat(oldInitialLoans, newLoans),
       bargaining: kings[newKing].defaults.bargaining,
     };
@@ -121,6 +130,14 @@ class Game extends Component {
     }
 
     this.setState(stateObject);
+  }
+
+  increaseDays(daysToAdd = 1) {
+    const { days } = this.state;
+
+    this.setState({
+      days: days + daysToAdd,
+    });
   }
 
   updateTaxRate(e) {
@@ -182,7 +199,11 @@ class Game extends Component {
     } else {
       this.setState({
         started: true,
+        decision: false,
+        event: {},
       });
+
+      this.increaseDays();
 
       this.startTicking();
     }
@@ -201,6 +222,22 @@ class Game extends Component {
     });
   }
 
+  checkSeason(days, season) {
+    const { seasonsPassed } = this.state;
+
+    let newSeason = season;
+
+    if (days - seasonsPassed * DAYS_IN_SEASON >= DAYS_IN_SEASON) {
+      newSeason = newSeason + 1;
+    }
+
+    if (season > SEASONS.length - 1) {
+      newSeason = 0;
+    }
+
+    return newSeason;
+  }
+
   resetGame() {
     this.stopTicking();
 
@@ -211,6 +248,12 @@ class Game extends Component {
 
   handleAction(value) {
     console.log(value);
+
+    // TODO: handle modifiers to affinity and affection here
+
+    this.setState({
+      decision: false,
+    });
 
     this.tick(value.days, true, this.startTicking);
   }
@@ -226,16 +269,16 @@ class Game extends Component {
       days,
       firstRequest,
       loans,
+      seasonsPassed,
     } = this.state;
 
-    if (!skipEvent && Math.random() <= eventProbability) {
-      const { timer } = this.state;
+    // TODO: handle checking for affection and affinity failures here
 
-      clearInterval(timer);
+    if (!skipEvent && Math.random() <= eventProbability) {
+      this.stopTicking();
 
       const stateObject = {
-        eventProbability: 0.1,
-        timer: null,
+        eventProbability: 0.10,
         decision: true,
       };
 
@@ -263,11 +306,13 @@ class Game extends Component {
       let newUnrest = unrest;
       let previousCoinAmount = coin;
       let loansWithInterest = [...loans];
-
+      let newSeason = season;
       let daysToProcess = daysPassed;
 
       while(daysToProcess > 0) {
-        populationChange = newPopulation * SEASONS[season].growth;
+        newSeason = this.checkSeason(days + 1, season);
+
+        populationChange = newPopulation * SEASONS[newSeason].growth;
 
         newPopulation = Math.floor(newPopulation + populationChange);
 
@@ -275,12 +320,17 @@ class Game extends Component {
 
         costsIncurred = Math.floor(newPopulation * DAILY_COSTS);
 
-        loansWithInterest = loansWithInterest.map((loan) => ({
-          id: loan.id,
-          amount: Math.floor(loan.amount + loan.amount * loan.rate),
-          rate: loan.rate,
-          lender: loan.lender,
-        }));
+        loansWithInterest = loansWithInterest.map((loan) => {
+          let amount = Math.floor(loan.amount + loan.amount * loan.rate);
+
+          return {
+            id: loan.id,
+            amount,
+            rate: loan.rate,
+            lender: loan.lender,
+            origination: loan.origination,
+          };
+        });
 
         newCoinAmount = newCoinAmount + taxesPaid - costsIncurred;
 
@@ -300,6 +350,8 @@ class Game extends Component {
         loans: loansWithInterest,
         decision: false,
         event: {},
+        season: newSeason,
+        seasonsPassed: (newSeason !== season) ? seasonsPassed + 1 : seasonsPassed,
       });
 
       if (typeof callback === 'function') {

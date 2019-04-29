@@ -6,12 +6,71 @@ import Option from '../option';
 import Input from '../input';
 import Dropdown from '../dropdown';
 
+const getNumberOfLoansPerLender = (loans, lenders) => {
+  const loanObject = lenders.reduce((loanObj, lender, id) => {
+    loanObj[id] = 0;
+
+    return loanObj;
+  }, {});
+
+  return loans.reduce((loanObj, loan) => {
+    const lenderId = loan.lender;
+
+    loanObj[lenderId] = loanObj[lenderId] + 1;
+
+    return loanObj;
+  }, loanObject);
+}
+
+const getDebtsPerLender = (loans, lenders) => {
+  const loanObject = lenders.reduce((lenderObj, lender, id) => {
+    lenderObj[id] = 0;
+
+    return lenderObj;
+  }, {});
+
+  return loans.reduce((lenderObj, loan) => {
+    const lenderId = loan.lender;
+
+    lenderObj[lenderId] = lenderObj[lenderId] + loan.amount;
+
+    return lenderObj;
+  }, loanObject);
+}
+
+
 const getLenderWithLeastLoans = (numberOfLoans) => {
   return Object.keys(numberOfLoans).sort((a, b) => {
     return numberOfLoans[a] - numberOfLoans[b];
   })[0];
 };
+
+const getLenderRate = (loans, lenders, id) => {
+  let rate;
+
+  const lender = lenders[id];
+
+  if (typeof lender.rate === 'number') {
+    rate = lender.rate;
+  } else {
+    const hasHalfOfMaxLoans = lender.maxLoans && getNumberOfLoansPerLender(loans, lenders)[id] >= lender.maxLoans / 2;
+    const hasHalfOfMaxDebt = lender.maxDebt && getDebtsPerLender(loans, lenders)[id] >= lender.maxDebt / 2;
+
+    if (hasHalfOfMaxDebt && hasHalfOfMaxLoans) {
+      rate = lender.rate.high;
+    } else if(hasHalfOfMaxDebt || hasHalfOfMaxLoans) {
+      rate = lender.rate.med;
+    } else {
+      rate = lender.rate.low;
+    }
+  }
+
+  return rate;
+}
 class Action extends Component {
+  numberOfLoans = {};
+  debtPerLender = {};
+
   state = {
     bargainingAttempts: 2,
     bargained: false,
@@ -22,22 +81,11 @@ class Action extends Component {
     chosenLender: 0,
     taxRate: this.props.taxes,
     days: this.props.daysPassed,
+    modifiers: this.props.modifiers,
   };
 
   constructor(props) {
     super(props);
-
-    this.numberOfLoans = props.lenders.reduce((loanObj, lender, id) => {
-      loanObj[id] = 0;
-
-      return loanObj;
-    }, {});
-
-    this.debtPerLender = props.lenders.reduce((lenderObj, lender, id) => {
-      lenderObj[id] = 0;
-
-      return lenderObj;
-    }, {});
 
     this.updateLoanValue = this.updateLoanValue.bind(this);
     this.handleChoice = this.handleChoice.bind(this);
@@ -47,28 +95,18 @@ class Action extends Component {
   }
 
   componentDidMount() {
-    const { loans, coin } = this.props;
+    const { loans, coin, lenders } = this.props;
     const { cost } = this.state;
 
-    this.numberOfLoans = loans.reduce((loanObj, loan) => {
-      const lenderId = loan.lender;
+    this.numberOfLoans = getNumberOfLoansPerLender(loans, lenders);
 
-      loanObj[lenderId] = loanObj[lenderId] + 1;
+    this.debtPerLender = getDebtsPerLender(loans, lenders);
 
-      return loanObj;
-    }, this.numberOfLoans);
-
-    this.debtPerLender = loans.reduce((lenderObj, loan) => {
-      const lenderId = loan.lender;
-
-      lenderObj[lenderId] = lenderObj[lenderId] + loan.amount;
-
-      return lenderObj;
-    }, this.debtPerLender);
+    const lenderId = getLenderWithLeastLoans(this.numberOfLoans);
 
     const stateObject = {
-      chosenLender: getLenderWithLeastLoans(this.numberOfLoans),
-    }
+      chosenLender: `${lenderId}:${getLenderRate(loans, lenders, lenderId)}`,
+    };
 
     if (coin <= 0) {
       stateObject.treasuryAmount = 0;
@@ -158,7 +196,9 @@ class Action extends Component {
       coin,
       lenders,
       bargaining,
-      affection
+      affection,
+      loans,
+      noBargain,
     } = this.props;
 
     const {
@@ -169,7 +209,6 @@ class Action extends Component {
       loanAmount,
       taxRate,
       chosenLender,
-      cost,
     } = this.state;
 
     const treasuryInputProps = {
@@ -191,27 +230,12 @@ class Action extends Component {
       .filter((lender, id) => this.numberOfLoans[id] < lender.maxLoans || lender.maxLoans === 0)
       .filter((lender, id) => this.debtPerLender[id] < lender.maxDebt)
       .map((lender, id) => {
-        let rate;
-
-        if (typeof lender.rate === 'number') {
-          rate = lender.rate;
-        } else {
-          const hasHalfOfMaxLoans = lender.maxLoans && this.numberOfLoans[id] >= lender.maxLoans / 2;
-          const hasHalfOfMaxDebt = lender.maxDebt && this.debtPerLender[id] >= lender.maxDebt / 2;
-
-          if (hasHalfOfMaxDebt && hasHalfOfMaxLoans) {
-            rate = lender.rate.high;
-          } else if(hasHalfOfMaxDebt || hasHalfOfMaxLoans) {
-            rate = lender.rate.med;
-          } else {
-            rate = lender.rate.low;
-          }
-        }
+        const rate = getLenderRate(loans, lenders, id);
 
         return {
           label: `${lender.name} @ ${rate * 100}%`,
-          value: id,
-        }
+          value: `${id}:${rate}`,
+        };
       })
     ;
 
@@ -235,7 +259,7 @@ class Action extends Component {
       onChange: this.updateFormState,
     };
 
-    const canBargain = !bargained && bargaining !== 0.00 && bargainingAttempts > 0 && affection > 0;
+    const canBargain = !noBargain && !bargained && bargaining !== 0.00 && bargainingAttempts > 0 && affection > 0;
 
     return (
       <form noValidate autoComplete="off" onSubmit={this.submitAction}>

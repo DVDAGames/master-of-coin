@@ -36,3 +36,11 @@ let's do this
 - **10:15**: Break to walk dogs
 - **11:30**: Brunch
 - **14:15**: Back to work
+- **17:00**: Solve some bugs; realize I probably won't make the Compo deadline
+- **17:45**: Quick break for some food
+- **18:00**: Back to work
+- **19:15**: Walk the dogs
+- **19:45**: Back to work
+- **20:40**: Tea break and getting ready for *Game of Thrones*; fully except that I have to enter the Jam instead of the Compo
+- **21:00**: *48 hours have passed...*; Compo Submission Deadline
+- **21:01**: *Game of Thrones*

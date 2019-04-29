@@ -53,3 +53,4 @@ let's do this
 - **16:05**: Fixed the bug; I'm an idiot
 - **17:00**: Finished adding failure states
 - **19:00**: Added more content; most of the mechanics are working as intended
+- **19:20**: Break for food; probably going to call it done here and not worry about the complete lack of interface

@@ -71,7 +71,7 @@ class Game extends Component {
     this.renderAction = this.renderAction.bind(this);
     this.startTicking = this.startTicking.bind(this);
     this.stopTicking = this.stopTicking.bind(this);
-    this.updateTaxRate = this.updateTaxRate.bind(this);
+    this.updateTickRate = this.updateTickRate.bind(this);
     this.handleAction = this.handleAction.bind(this);
     this.handleLoanPayment = this.handleLoanPayment.bind(this);
     this.kingTransition = this.kingTransition.bind(this);
@@ -157,43 +157,36 @@ class Game extends Component {
     });
   }
 
-  updateTaxRate(e) {
-    const { target } = e;
-
-    const isValidTaxRate = typeof target.value === 'number';
-
-    if (isValidTaxRate) {
-      this.setState({
-        taxes: newTaxRate,
-      });
-    }
-  }
-
   updateTickRate(e) {
     const { target } = e;
 
-    if (TICK_RATES.includes(target.value)) {
+    const tickRate = parseInt(target.value);
+
+    if (TICK_RATES.find((rate) => rate.value === tickRate)) {
+      console.log('FOUND');
       this.setState({
-        tickRate: target.value,
-      });
+        tickRate,
+      }, this.startTicking());
     }
   }
 
   startTicking() {
-    const { paused, tickRate } = this.state;
+    const { paused, tickRate, timer } = this.state;
 
-    const timer = setInterval(this.tick, tickRate);
+    if (paused && !timer) {
+      const timer = setInterval(this.tick, tickRate);
 
-    this.setState({
-      timer,
-      paused: !paused,
-    });
+      this.setState({
+        timer,
+        paused: !paused,
+      });
+    }
   }
 
   stopTicking() {
     const { timer, paused } = this.state;
 
-    if (timer) {
+    if (timer && !paused) {
       clearInterval(timer);
 
       this.setState({
@@ -641,7 +634,7 @@ class Game extends Component {
     return (
       <div>
         {!transitioningKing && <King king={kings[currentKing]} />}
-        {!statusMessage && started && !decision && !transitioningKing && <Tweaks paused={paused} taxes={state.taxes} tickRate={tickRate} onChangeTaxRate={this.changeTaxRate} onChangeTickRate={this.changeTickRate} onPause={this.stopTicking} onPlay={this.startTicking} onResign={this.resign} />}
+        {!statusMessage && started && !decision && !transitioningKing && <Tweaks paused={paused} tickRate={tickRate} onChangeTickRate={this.updateTickRate} onPause={this.stopTicking} onPlay={this.startTicking} onResign={this.resign} />}
         {!statusMessage && started && !transitioningKing && <Loans coin={state.coin} loans={state.loans} lenders={state.lenders} initialLoans={state.initialLoans} onPayment={this.handleLoanPayment} />}
         {!statusMessage && started && !transitioningKing && <Stats {...state} />}
         {!statusMessage && event && event.action && this.renderAction(event.action, event.handler)}

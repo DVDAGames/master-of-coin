@@ -25,6 +25,8 @@ const Stats = props => {
 
   return (
     <dl>
+      <dt>Taxes</dt>
+      <dd>{props.taxes * 100}%</dd>
       <dt>Treasury</dt>
       <dd>{props.coin}</dd>
       {props.loans.length > 0 && <Fragment>

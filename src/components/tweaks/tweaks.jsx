@@ -6,7 +6,7 @@ const Tweaks = props => {
   const pauseButtonText = (props.paused) ? 'Resume' : 'Pause';
   const pauseButtonAction = (props.paused) ? props.onPlay : props.onPause;
 
-  const renderTickRates = (value) => TICK_RATES.map(rate => <option key={`rate-${rate.value}`} value={rate.value}>{rate.label}</option>);
+  const renderTickRates = () => TICK_RATES.map(rate => <option key={`rate-${rate.value}`} value={rate.value}>{rate.label}</option>);
 
   return (
     <form noValidate>
@@ -15,7 +15,7 @@ const Tweaks = props => {
       </div>
       <div>
         <label htmlFor="tickRate">Speed</label>
-        <select id="tickRate" name="tickRate" defaultValue={props.tickRate} onChange={props.onChangeTickRate}>
+        <select id="tickRate" name="tickRate" defaultValue={props.tickRate} onChange={props.onChangeTickRate} onFocus={props.onPause} onBlur={props.onPlay}>
           {renderTickRates()}
         </select>
       </div>
